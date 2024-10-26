@@ -17,7 +17,9 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - COLMAP_OPTION=--Fusion.min_num_pixels 5 --Fusion.max_num_pixels 10000 --Fusion.max_reproj_error 2 --Fusion.max_depth_error 0.1 --Fusion.check_num_images 30
-    command: colmap automatic_reconstructor --image_path ./data/images/ --workspace_path ./data/ ${COLMAP_OPTION} 
+    command: |
+      /bin/bash -c "if [ ! -f /code/data/dense/0/fused.ply ]; then
+      colmap automatic_reconstructor --image_path ./data/images/ --workspace_path ./data/ ${COLMAP_OPTION}; fi" 
   opensplat:
     build: .
     volumes:
@@ -30,5 +32,5 @@ services:
     entrypoint: |
       /bin/bash -c "
       while [ ! -f /code/data/dense/0/fused.ply ]; do sleep 1; done;
-      ./build/opensplat /code/data/ -n 2000 && mv splat.ply result/
+      ./build/opensplat /code/data/ -n 2000 -s 200 && mv splat.ply result/
       "
